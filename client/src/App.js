@@ -72,7 +72,7 @@ function App() {
         }
       };
       axios
-        .post("http://127.0.0.1/indexdata", qs.stringify(formData), config)
+        .post("/indexdata", qs.stringify(formData), config)
         .then(result => {
           if (result.data === "indexed")
             setActiveStep(prevActiveStep => prevActiveStep + 1);
@@ -83,7 +83,7 @@ function App() {
         });
     } else if (activeStep === 1) {
       axios
-        .get("http://127.0.0.1/search?query=" + prop)
+        .get("/search?query=" + prop)
         .then(result => {
           setActiveStep(prevActiveStep => prevActiveStep + 1);
           console.log(result.data);
@@ -103,7 +103,7 @@ function App() {
 
   const handleReset = () => {
     axios
-      .get("http://127.0.0.1/cleardata")
+      .get("/cleardata")
       .then(result => {
         setResult([]);
         setProp("");

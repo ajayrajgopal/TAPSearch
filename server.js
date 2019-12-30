@@ -10,8 +10,15 @@ const pdf = require("pdf-parse");
 var cors = require("cors");
 var util = require("util");
 fs = require("fs");
-httpServer.listen(80, () => {
-  console.log("HTTP Server running on port 80");
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+  });
+}
+const PORT = process.env.PORT || 80;
+httpServer.listen(PORT, () => {
+  console.log("HTTP Server running on port " + PORT);
 });
 app.use(
   cors({
@@ -34,7 +41,6 @@ app.post("/indexdata", async (req, res) => {
   let { wordMap, paraList } = await indexDoc(req.body.data);
   req.session.wordIndex = wordMap;
   req.session.paraList = paraList;
-  console.log(JSON.stringify(wordMap));
   res.send("indexed");
 });
 function indexDoc(data) {
