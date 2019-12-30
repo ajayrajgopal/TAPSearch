@@ -22,7 +22,9 @@ httpServer.listen(PORT, () => {
 });
 app.use(
   cors({
-    credentials: true
+    credentials: true,
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE"
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
