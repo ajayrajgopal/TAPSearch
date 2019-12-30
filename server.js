@@ -36,6 +36,9 @@ app.use(
     }
   })
 );
+app.get("/sea", (req, res) => {
+  res.send("hello");
+});
 app.get("/search", (req, res) => {
   var query = decodeURIComponent(req.query.query)
     .toLowerCase()
