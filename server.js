@@ -71,11 +71,11 @@ app.get("/search", (req, res) => {
   ) {
     res.send("not found");
   } else {
+    var matches = [];
     var paraList = req.session.paraList;
-
-    const matches = paraList.filter(function(paragraph, index) {
-      if (req.session.wordIndex[query].includes(index)) return paragraph;
-    });
+    for (var i = 0; i < paraList.length; i++) {
+      if (req.session.wordIndex[query].includes(i)) matches.push(paraList[i]);
+    }
     res.send(matches);
   }
 });
