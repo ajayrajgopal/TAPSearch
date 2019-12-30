@@ -38,7 +38,7 @@ app.use(
   })
 );
 app.post("/indexdata", async (req, res) => {
-  const data = data.replace(/ \n/g, "\n");
+  const data = req.body.data.replace(/ \n/g, "\n");
   const paraList = data.split("\n\n");
   const wordList = paraList.map(function(para) {
     return Array.from(new Set(para.split(/\.|,|\s/)));
@@ -61,7 +61,6 @@ app.get("/cleardata", (req, res) => {
   res.send("deleted");
 });
 app.get("/search", (req, res) => {
-  var url_parts = url.parse(req.url, true);
   var query = decodeURIComponent(req.query.query)
     .toLowerCase()
     .trim();
@@ -74,14 +73,9 @@ app.get("/search", (req, res) => {
   } else {
     var paraList = req.session.paraList;
 
-    const matches = req.session.paraList.filter(function(paragraph, index) {
+    const matches = paraList.filter(function(paragraph, index) {
       if (req.session.wordIndex[query].includes(index)) return paragraph;
     });
     res.send(matches);
   }
 });
-function indexDoc(data) {
-  return new Promise(function(resolve, reject) {
-    resolve({ wordMap, paraList });
-  });
-}
