@@ -22,8 +22,7 @@ httpServer.listen(PORT, () => {
 });
 app.use(
   cors({
-    credentials: true,
-    origin: "http://localhost:3000"
+    credentials: true
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,6 +36,26 @@ app.use(
     }
   })
 );
+app.get("/search", (req, res) => {
+  var query = decodeURIComponent(req.query.query)
+    .toLowerCase()
+    .trim();
+  if (
+    typeof req.session.wordIndex === "undefined" ||
+    typeof req.session.wordIndex[query] === "undefined" ||
+    req.session.wordIndex[query].length === 0
+  ) {
+    res.send("not found");
+  } else {
+    var matches = [];
+    var paraList = req.session.paraList;
+    for (var i = 0; i < paraList.length; i++) {
+      if (req.session.wordIndex[query].includes(i)) matches.push(paraList[i]);
+    }
+    res.send(matches);
+  }
+});
+
 app.post("/indexdata", async (req, res) => {
   const data = req.body.data.replace(/ \n/g, "\n");
   const paraList = data.split("\n\n");
@@ -59,23 +78,4 @@ app.post("/indexdata", async (req, res) => {
 app.get("/cleardata", (req, res) => {
   req.session.wordIndex = {};
   res.send("deleted");
-});
-app.get("/search", (req, res) => {
-  var query = decodeURIComponent(req.query.query)
-    .toLowerCase()
-    .trim();
-  if (
-    typeof req.session.wordIndex === "undefined" ||
-    typeof req.session.wordIndex[query] === "undefined" ||
-    req.session.wordIndex[query].length === 0
-  ) {
-    res.send("not found");
-  } else {
-    var matches = [];
-    var paraList = req.session.paraList;
-    for (var i = 0; i < paraList.length; i++) {
-      if (req.session.wordIndex[query].includes(i)) matches.push(paraList[i]);
-    }
-    res.send(matches);
-  }
 });
