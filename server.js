@@ -12,12 +12,12 @@ var util = require("util");
 var path = require("path");
 
 fs = require("fs");
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname + "/client/build/index.html"));
-  });
-}
+//if (process.env.NODE_ENV === "production") {
+app.use(express.static(path.join(__dirname, "client/build")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname + "/client/build/index.html"));
+});
+//}
 const PORT = process.env.PORT || 80;
 httpServer.listen(PORT, () => {
   console.log("HTTP Server running on port " + PORT);
@@ -40,13 +40,8 @@ app.use(
     }
   })
 );
-app.get("/sea", (req, res) => {
-  res.send("hello");
-});
-app.get("/search", (req, res) => {
-  var query = decodeURIComponent(req.query.query)
-    .toLowerCase()
-    .trim();
+app.post("/search", (req, res) => {
+  var query = req.body.query.toLowerCase().trim();
   if (
     typeof req.session.wordIndex === "undefined" ||
     typeof req.session.wordIndex[query] === "undefined" ||
@@ -63,7 +58,7 @@ app.get("/search", (req, res) => {
   }
 });
 
-app.post("/indexdata", async (req, res) => {
+app.post("/indexdata", (req, res) => {
   const data = req.body.data.replace(/ \n/g, "\n");
   const paraList = data.split("\n\n");
   const wordList = paraList.map(function(para) {
@@ -82,7 +77,8 @@ app.post("/indexdata", async (req, res) => {
   res.send("indexed");
 });
 
-app.get("/cleardata", (req, res) => {
+app.post("/cleardata", (req, res) => {
   req.session.wordIndex = {};
+  req.session.paraList = [];
   res.send("deleted");
 });

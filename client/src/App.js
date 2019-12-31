@@ -82,14 +82,21 @@ function App() {
           console.log("Some Error Occurred");
         });
     } else if (activeStep === 1) {
+      var formData = { query: prop };
+      const config = {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      };
       axios
-        .get("/search?query=" + prop)
+        .post("/search", qs.stringify(formData), config)
         .then(result => {
           setActiveStep(prevActiveStep => prevActiveStep + 1);
-          console.log(result.data);
           if (result.data !== "not found") setResult(result.data);
         })
-        .catch(err => {});
+        .catch(err => {
+          console.log("Some Error Occurred");
+        });
     } else if (activeStep === 2) {
       setActiveStep(prevActiveStep => prevActiveStep + 1);
     }
