@@ -48,8 +48,10 @@ function getStepContent(step, prop, setProp, pdf, setPdf) {
       return (
         <div>
           <AddData data={prop} setData={setProp} />
+          <p>Upload PDF</p>
           <input
             type="file"
+            accept="application/pdf"
             onChange={event => {
               let form = new FormData();
               form.append("data", event.target.files[0]);
