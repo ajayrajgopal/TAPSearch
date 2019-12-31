@@ -42,10 +42,22 @@ const useStyles = makeStyles(theme => ({
 function getSteps() {
   return ["Add new document", "Enter search term", "Results"];
 }
-function getStepContent(step, prop, setProp) {
+function getStepContent(step, prop, setProp, pdf, setPdf) {
   switch (step) {
     case 0:
-      return <AddData data={prop} setData={setProp} />;
+      return (
+        <div>
+          <AddData data={prop} setData={setProp} />
+          <input
+            type="file"
+            onChange={event => {
+              let form = new FormData();
+              form.append("data", event.target.files[0]);
+              setPdf(form);
+            }}
+          ></input>
+        </div>
+      );
     case 1:
       return <Search query={prop} setQuery={setProp} />;
     case 2:
@@ -59,28 +71,47 @@ function App() {
   const classes = useStyles();
   const [activeStep, setActiveStep] = React.useState(0);
   const [prop, setProp] = React.useState("");
+  const [pdf, setPdf] = React.useState();
   const [result, setResult] = React.useState([]);
-  const isEnabled = prop.length > 0;
+  const isEnabled = prop.length > 0 || pdf != null;
   const steps = getSteps();
 
   const handleNext = () => {
     if (activeStep === 0) {
-      var formData = { data: prop };
-      const config = {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        }
-      };
-      axios
-        .post("/indexdata", qs.stringify(formData), config)
-        .then(result => {
-          if (result.data === "indexed")
-            setActiveStep(prevActiveStep => prevActiveStep + 1);
-          setProp("");
-        })
-        .catch(err => {
-          console.log("Some Error Occurred");
-        });
+      if (pdf == null) {
+        console.log("NULL");
+        var formData = { data: prop };
+        const config = {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        };
+        axios
+          .post("/indexdata", qs.stringify(formData), config)
+          .then(result => {
+            if (result.data === "indexed")
+              setActiveStep(prevActiveStep => prevActiveStep + 1);
+            setProp("");
+          })
+          .catch(err => {
+            console.log("Some Error Occurred");
+          });
+      } else {
+        axios
+          .post("/uploadfile", pdf, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          })
+          .then(result => {
+            if (result.data === "indexed")
+              setActiveStep(prevActiveStep => prevActiveStep + 1);
+            setPdf(null);
+          })
+          .catch(err => {
+            console.log("Some Error Occurred");
+          });
+      }
     } else if (activeStep === 1) {
       var formData = { query: prop };
       const config = {
@@ -104,6 +135,7 @@ function App() {
 
   const handleBack = () => {
     setResult([]);
+    setPdf(null);
     setProp("");
     setActiveStep(prevActiveStep => prevActiveStep - 1);
   };
@@ -114,6 +146,8 @@ function App() {
       .then(result => {
         setResult([]);
         setProp("");
+        setPdf(null);
+
         setActiveStep(0);
       })
       .catch(err => {});
@@ -138,7 +172,7 @@ function App() {
             <StepContent>
               <Typography>
                 {index !== 2
-                  ? getStepContent(index, prop, setProp)
+                  ? getStepContent(index, prop, setProp, pdf, setPdf)
                   : getStepContent(index, result, setResult)}
               </Typography>
               <div className={classes.actionsContainer}>

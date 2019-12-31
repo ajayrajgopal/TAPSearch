@@ -57,28 +57,52 @@ app.post("/search", (req, res) => {
     res.send(matches);
   }
 });
-
-app.post("/indexdata", (req, res) => {
-  const data = req.body.data.replace(/ \n/g, "\n");
-  const paraList = data.split("\n\n");
-  const wordList = paraList.map(function(para) {
-    return Array.from(new Set(para.split(/\.|,|\s/)));
-  });
-  var wordMap = {};
-  for (var i = 0; i < wordList.length; i++) {
-    for (var j = 0; j < wordList[i].length; j++) {
-      var word = wordList[i][j].toLowerCase();
-      if (typeof wordMap[word] === "undefined") wordMap[word] = [];
-      if (wordMap[word].length <= 10) wordMap[word].push(i);
-    }
-  }
+app.post("/indexdata", async (req, res) => {
+  let { wordMap, paraList } = await indexDoc(req.body.data);
   req.session.wordIndex = wordMap;
   req.session.paraList = paraList;
+  console.log(wordMap);
   res.send("indexed");
 });
+function indexDoc(data) {
+  return new Promise(function(resolve, reject) {
+    data = data.replace(/ \n/g, "\n");
+    const paraList = data.split("\n\n");
+    const wordList = paraList.map(function(para) {
+      return Array.from(new Set(para.split(/\.|,|\s/)));
+    });
+    var wordMap = {};
+    for (var i = 0; i < wordList.length; i++) {
+      for (var j = 0; j < wordList[i].length; j++) {
+        var word = wordList[i][j].toLowerCase();
+        if (typeof wordMap[word] === "undefined") wordMap[word] = [];
+        if (wordMap[word].length <= 10) wordMap[word].push(i);
+      }
+    }
 
+    resolve({ wordMap, paraList });
+  });
+}
 app.post("/cleardata", (req, res) => {
   req.session.wordIndex = {};
   req.session.paraList = [];
   res.send("deleted");
+});
+app.post("/uploadfile", (req, res) => {
+  var form = new formidable.IncomingForm();
+  form.parse(req, function(err, fields, files) {
+    var extension = files.data.type;
+    if (extension.substring(extension.length - 3) == "pdf") {
+      fs.readFile(files.data.path, function(err, doc) {
+        pdf(doc).then(async function(data) {
+          let { wordMap, paraList } = await indexDoc(data.text);
+          req.session.wordIndex = wordMap;
+          req.session.paraList = paraList;
+          res.send("indexed");
+        });
+      });
+    } else {
+      res.send("error");
+    }
+  });
 });
