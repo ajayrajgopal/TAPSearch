@@ -4,7 +4,7 @@ A simple implementation of Inverted Index Search
   2. Enter search term. The word that has to be searched is entered here.
   3. Results. All Paragraphs containing the word are displayed.
 
-# Test Cases
+## Test Cases
 Sample Input:
   1. Add new documents:
   
